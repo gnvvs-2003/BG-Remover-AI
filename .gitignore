@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Images
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+!static/images/  # Keep static images if any
+
+# macOS
+.DS_Store

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Optimization -->
+    <title>AI Background Remover | Fast & Free Image Cutout</title>
+    <meta name="description" content="Instantly remove backgrounds from your images for free using advanced AI. High-quality background removal in seconds.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="background-decorations">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Enhancing image &amp; removing background...</p>
+    </div>
+
+    <main class="app-container">
+        <header class="app-header">
+            <h1><i class="ph-fill ph-magic-wand"></i> AI Background Remover</h1>
+            <p>Remove image backgrounds instantly in high quality.</p>
+        </header>
+
+        <section class="workspace">
+            <!-- Left Panel: Upload Form -->
+            <div class="glass-panel upload-panel" id="upload-section">
+                <h2>Upload Image</h2>
+                <form method="post" action="/" enctype="multipart/form-data" id="upload-form" autocomplete="off" onsubmit="showLoading()">
+                    <div class="drop-zone" id="drop-zone">
+                        <input type="file" id="file-input" name="image" accept="image/*" required onchange="previewImage(event)">
+                        <div class="drop-zone-content">
+                            <i class="ph ph-upload-simple"></i>
+                            <span class="file-label">Drag & drop or click to upload</span>
+                            <span class="file-hint">Supports JPG, PNG, WEBP</span>
+                        </div>
+                    </div>
+                    
+                    <div id="preview-container" class="preview-container hidden">
+                        <img id="preview" class="img-preview" src="{{ original_img if original_img else '' }}" alt="Original Image Preview">
+                        <button type="button" id="reupload-btn" class="btn btn-secondary" onclick="triggerReupload()">
+                            <i class="ph ph-arrows-clockwise"></i> Choose another
+                        </button>
+                    </div>
+
+                    <button type="submit" id="remove-btn" class="btn btn-primary" {{ 'disabled' if not original_img }}>
+                        <i class="ph ph-eraser"></i> Remove Background
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Panel: Result Display -->
+            <div class="glass-panel result-panel" id="result-section">
+                <h2>Result</h2>
+                <div class="result-content {{ 'empty' if not processed_img }}">
+                    {% if processed_img %}
+                        <div class="checkerboard-bg">
+                            <img class="img-result" src="{{ processed_img }}" alt="Processed Image File">
+                        </div>
+                        <a class="btn btn-success download-link" href="{{ processed_img }}" download="output.png">
+                            <i class="ph ph-download-simple"></i> Download Result
+                        </a>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="ph ph-image"></i>
+                            <p>Your processed image will appear here</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <footer class="app-footer">
+            <p>&copy; 2026 RemoveBG | Powered by Flask & rembg</p>
+        </footer>
+    </main>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+        const preview = document.getElementById('preview');
+        const previewContainer = document.getElementById('preview-container');
+        const removeBtn = document.getElementById('remove-btn');
+        const loadingOverlay = document.getElementById('loading');
+
+        function updateUI(hasImage) {
+            if (hasImage) {
+                dropZone.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+                removeBtn.removeAttribute('disabled');
+            } else {
+                dropZone.classList.remove('hidden');
+                previewContainer.classList.add('hidden');
+                removeBtn.setAttribute('disabled', 'true');
+                fileInput.value = '';
+                preview.src = '';
+            }
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    updateUI(true);
+                }
+                reader.readAsDataURL(file);
+            } else {
+                updateUI(false);
+            }
+        }
+
+        function triggerReupload() {
+            updateUI(false);
+        }
+        
+        function showLoading() {
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        // Handle Drag & Drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                
+                // Manually trigger the preview
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        });
+
+        // Initialize state on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (preview.src && preview.src !== window.location.href && preview.src !== '') {
+                updateUI(true);
+            } else {
+                updateUI(false);
+            }
+        });
+    </script>
+</body>
+</html>
